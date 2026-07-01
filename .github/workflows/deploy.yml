@@ -1,0 +1,67 @@
+name: Deploy web (GitHub Pages)
+
+# Compila la app Flutter para web y la publica en GitHub Pages.
+# La URL queda en: https://<usuario>.github.io/<repo>/
+# Las credenciales de Supabase van embebidas por defecto (ver app/lib/core/config/env.dart),
+# así que no hace falta configurar secrets.
+
+on:
+  push:
+    branches:
+      - main
+      - claude/iupi-event-manager-luijxw
+  workflow_dispatch: {} # permite lanzarlo a mano desde la pestaña Actions
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un solo deploy a la vez.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.4
+          cache: true
+
+      - name: Generar plataforma web
+        working-directory: app
+        run: flutter create . --platforms=web
+
+      - name: Dependencias
+        working-directory: app
+        run: flutter pub get
+
+      - name: Build web
+        working-directory: app
+        # base-href = nombre del repo (necesario para servir en un subpath de Pages).
+        run: |
+          flutter build web --release --base-href "/${GITHUB_REPOSITORY#*/}/"
+          touch build/web/.nojekyll
+
+      - name: Preparar artefacto de Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
