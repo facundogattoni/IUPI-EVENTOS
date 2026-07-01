@@ -24,12 +24,14 @@ supabase db push          # aplica todo lo de supabase/migrations/
 psql "$DATABASE_URL" -f supabase/seed.sql   # datos iniciales
 ```
 
-### Opción B — desde el panel web
+### Opción B — desde el panel web (la más simple)
 
-1. Abrí **SQL Editor** en el panel de Supabase.
-2. Pegá y ejecutá, **en orden**, cada archivo de `supabase/migrations/`
-   (`0001_...` → `0005_...`).
-3. Ejecutá `supabase/seed.sql`.
+1. Abrí **SQL Editor** en el panel de Supabase → **New query**.
+2. Pegá el contenido de **`supabase/all_in_one.sql`** (trae las 5 migraciones + el seed en
+   un solo archivo) y ejecutá. Es idempotente: si lo corrés de nuevo, no rompe nada.
+
+> Si preferís ir paso a paso, pegá y ejecutá **en orden** cada archivo de
+> `supabase/migrations/` (`0001_...` → `0005_...`) y después `supabase/seed.sql`.
 
 ## 4. Crear los usuarios administradores
 
