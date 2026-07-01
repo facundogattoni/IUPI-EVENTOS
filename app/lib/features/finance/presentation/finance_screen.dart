@@ -149,7 +149,7 @@ class _Totals extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.12),
+          color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -181,7 +181,7 @@ class _TxTile extends StatelessWidget {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
-        color: Colors.red.withOpacity(0.15),
+        color: Colors.red.withValues(alpha: 0.15),
         child: const Icon(Icons.delete_outline, color: Colors.red),
       ),
       confirmDismiss: (_) async {
@@ -191,7 +191,7 @@ class _TxTile extends StatelessWidget {
       },
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.15),
+          backgroundColor: color.withValues(alpha: 0.15),
           child: Icon(income ? Icons.south_west : Icons.north_east,
               color: color, size: 20),
         ),
@@ -286,7 +286,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            value: _category,
+            initialValue: _category,
             decoration: const InputDecoration(labelText: 'Categoría'),
             items: [
               for (final c in _categories)

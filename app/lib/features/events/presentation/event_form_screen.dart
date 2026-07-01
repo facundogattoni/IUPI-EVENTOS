@@ -45,7 +45,6 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
   final Set<String> _staffIds = {};
 
   bool _loading = false;
-  bool _initialized = false;
 
   @override
   void initState() {
@@ -285,7 +284,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
 
                   _section('Organización'),
                   DropdownButtonFormField<EventStatus>(
-                    value: _status,
+                    initialValue: _status,
                     decoration: const InputDecoration(labelText: 'Estado'),
                     items: [
                       for (final s in EventStatus.values)
@@ -323,7 +322,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<String?>(
-          value: _coordinatorId,
+          initialValue: _coordinatorId,
           decoration:
               const InputDecoration(labelText: 'Coordinador asignado'),
           items: [

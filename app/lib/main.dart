@@ -17,6 +17,8 @@ Future<void> main() async {
   if (Env.isConfigured) {
     await Supabase.initialize(
       url: Env.supabaseUrl,
+      // anonKey acepta tanto la anon key (JWT) como la nueva publishable key.
+      // ignore: deprecated_member_use
       anonKey: Env.supabaseAnonKey,
     );
     runApp(const ProviderScope(child: IupiApp()));
@@ -57,20 +59,20 @@ class _MissingConfigApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
-      home: Scaffold(
+      home: const Scaffold(
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.settings, size: 48),
-                const SizedBox(height: 16),
-                const Text('Falta configurar Supabase',
+                Icon(Icons.settings, size: 48),
+                SizedBox(height: 16),
+                Text('Falta configurar Supabase',
                     style:
                         TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                const Text(
+                SizedBox(height: 8),
+                Text(
                   'Ejecutá la app con:\n\n'
                   'flutter run \\\n'
                   '  --dart-define=SUPABASE_URL=... \\\n'

@@ -63,7 +63,7 @@ class Profile {
       if (value != null) return Color(value);
     }
     // Color estable derivado del id.
-    final palette = Colors.primaries;
+    const palette = Colors.primaries;
     return palette[id.hashCode.abs() % palette.length];
   }
 

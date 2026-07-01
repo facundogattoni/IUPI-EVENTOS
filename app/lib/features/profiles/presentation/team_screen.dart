@@ -87,7 +87,7 @@ class _ProfileTile extends ConsumerWidget {
                   decoration: const InputDecoration(labelText: 'Nombre')),
               const SizedBox(height: 12),
               DropdownButtonFormField<UserRole>(
-                value: role,
+                initialValue: role,
                 decoration: const InputDecoration(labelText: 'Rol'),
                 items: [
                   for (final r in UserRole.values)

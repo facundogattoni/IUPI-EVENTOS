@@ -195,7 +195,7 @@ class _Header extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: event.status.color(scheme).withOpacity(0.15),
+            color: event.status.color(scheme).withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(event.status.label,
@@ -219,7 +219,7 @@ class _MoneyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Card(
-      color: scheme.primaryContainer.withOpacity(0.4),
+      color: scheme.primaryContainer.withValues(alpha: 0.4),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

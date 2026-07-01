@@ -89,7 +89,7 @@ class _TaskTile extends StatelessWidget {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
-        color: Colors.red.withOpacity(0.15),
+        color: Colors.red.withValues(alpha: 0.15),
         child: const Icon(Icons.delete_outline, color: Colors.red),
       ),
       confirmDismiss: (_) async {
@@ -252,7 +252,7 @@ class _TaskSheetState extends ConsumerState<_TaskSheet> {
                     labelText: 'Tarea (ej: Reparar inflable)')),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _category,
+              initialValue: _category,
               decoration: const InputDecoration(labelText: 'Categoría'),
               items: [
                 for (final c in kMaintenanceCategories)
@@ -365,7 +365,7 @@ class _InventoryTab extends ConsumerWidget {
                     margin: const EdgeInsets.all(12),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.15),
+                      color: Colors.orange.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(children: [
@@ -399,7 +399,7 @@ class _ItemTile extends StatelessWidget {
       onTap: () => _showEditItem(context, ref, existing: item),
       leading: CircleAvatar(
         backgroundColor: item.isLow
-            ? Colors.orange.withOpacity(0.2)
+            ? Colors.orange.withValues(alpha: 0.2)
             : Theme.of(context).colorScheme.surfaceContainerHighest,
         child: Icon(
           item.isLow ? Icons.warning_amber : Icons.inventory_2_outlined,

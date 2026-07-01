@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 
 enum MaintenanceStatus {
-  pendiente,
-  en_progreso,
-  resuelto;
+  pendiente('pendiente'),
+  enProgreso('en_progreso'),
+  resuelto('resuelto');
+
+  const MaintenanceStatus(this.db);
+
+  /// Valor exacto que se guarda en la base (enum maintenance_status).
+  final String db;
 
   static MaintenanceStatus fromDb(String? v) => MaintenanceStatus.values
-      .firstWhere((e) => e.name == v, orElse: () => MaintenanceStatus.pendiente);
-  String get db => name;
+      .firstWhere((e) => e.db == v, orElse: () => MaintenanceStatus.pendiente);
+
   String get label {
     switch (this) {
       case MaintenanceStatus.pendiente:
         return 'Pendiente';
-      case MaintenanceStatus.en_progreso:
+      case MaintenanceStatus.enProgreso:
         return 'En progreso';
       case MaintenanceStatus.resuelto:
         return 'Resuelto';

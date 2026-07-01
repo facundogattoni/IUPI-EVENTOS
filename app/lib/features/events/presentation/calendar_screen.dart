@@ -80,7 +80,7 @@ class CalendarScreen extends ConsumerWidget {
                         color: Theme.of(context)
                             .colorScheme
                             .primary
-                            .withOpacity(0.25),
+                            .withValues(alpha: 0.25),
                         shape: BoxShape.circle,
                       ),
                       selectedDecoration: BoxDecoration(
