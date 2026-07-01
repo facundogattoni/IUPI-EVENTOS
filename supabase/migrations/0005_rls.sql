@@ -7,6 +7,38 @@
 alter view public.events_with_balance set (security_invoker = true);
 
 -- ---------------------------------------------------------------------
+-- Helpers SECURITY DEFINER para los chequeos cruzados entre events y
+-- event_staff. Al ser DEFINER saltan el RLS de esas tablas y evitan la
+-- recursión infinita que se produce si una política consulta la otra tabla
+-- protegida (events -> event_staff -> events -> ...).
+-- ---------------------------------------------------------------------
+create or replace function public.is_event_coordinator(eid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.events e
+    where e.id = eid and e.coordinator_id = auth.uid()
+  );
+$$;
+
+create or replace function public.is_event_staff(eid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.event_staff s
+    where s.event_id = eid and s.profile_id = auth.uid()
+  );
+$$;
+
+-- ---------------------------------------------------------------------
 -- profiles
 -- ---------------------------------------------------------------------
 alter table public.profiles enable row level security;
@@ -34,8 +66,7 @@ create policy events_select on public.events
   for select using (
     public.is_admin()
     or coordinator_id = auth.uid()
-    or exists (select 1 from public.event_staff s
-               where s.event_id = events.id and s.profile_id = auth.uid())
+    or public.is_event_staff(id)
   );
 
 drop policy if exists events_insert on public.events;
@@ -63,21 +94,16 @@ create policy event_staff_select on public.event_staff
   for select using (
     public.is_admin()
     or profile_id = auth.uid()
-    or exists (select 1 from public.events e
-               where e.id = event_staff.event_id and e.coordinator_id = auth.uid())
+    or public.is_event_coordinator(event_id)
   );
 
 drop policy if exists event_staff_write on public.event_staff;
 create policy event_staff_write on public.event_staff
   for all using (
-    public.is_admin()
-    or exists (select 1 from public.events e
-               where e.id = event_staff.event_id and e.coordinator_id = auth.uid())
+    public.is_admin() or public.is_event_coordinator(event_id)
   )
   with check (
-    public.is_admin()
-    or exists (select 1 from public.events e
-               where e.id = event_staff.event_id and e.coordinator_id = auth.uid())
+    public.is_admin() or public.is_event_coordinator(event_id)
   );
 
 -- ---------------------------------------------------------------------
