@@ -1,0 +1,41 @@
+name: iupi_event_manager
+description: Aplicación de gestión interna para IUPI, salón de eventos infantiles.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Estado / inyección
+  flutter_riverpod: ^2.5.1
+
+  # Backend: Postgres + Auth + Realtime
+  supabase_flutter: ^2.5.6
+
+  # Navegación
+  go_router: ^14.2.0
+
+  # Calendario (mes / semana / día)
+  table_calendar: ^3.1.2
+
+  # Gráficos del dashboard
+  fl_chart: ^0.68.0
+
+  # Formato de fechas y moneda (es_AR)
+  intl: ^0.19.0
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
