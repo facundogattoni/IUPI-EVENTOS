@@ -32,6 +32,11 @@ Cada etapa se entrega con commit propio.
   limpieza, vajilla faltante) con prioridad, vencimiento y recordatorios.
 - Inventario con stock actual/mínimo y alertas de faltante.
 
+## Extras entregados ✅
+- **WhatsApp al cliente**: desde el evento se abre el chat con un mensaje ya redactado
+  (confirmación del cumple o recordatorio de saldo) y botón para llamar. Ahorra tiempo y
+  evita errores al copiar datos a mano.
+
 ## E6 — Integración Google Calendar ⏳ (diseñado, pendiente de implementar)
 - OAuth por usuario, tabla `google_tokens`.
 - Edge Function que sincroniza cada evento en el calendario de las personas asignadas.

@@ -77,6 +77,30 @@ Para no escribir las claves cada vez, podés usar un archivo `env.json` (ignorad
 flutter run --dart-define-from-file=env.json
 ```
 
+## 5.1 Habilitar WhatsApp y llamadas (url_launcher)
+
+Para que los botones de WhatsApp y "Llamar" abran las apps del celular, hay que declarar los
+esquemas en las plataformas (una sola vez, después de `flutter create .`):
+
+**Android** — en `android/app/src/main/AndroidManifest.xml`, dentro de `<manifest>` (fuera de
+`<application>`):
+
+```xml
+<queries>
+  <intent><action android:name="android.intent.action.VIEW"/>
+    <data android:scheme="https"/></intent>
+  <intent><action android:name="android.intent.action.DIAL"/>
+    <data android:scheme="tel"/></intent>
+</queries>
+```
+
+**iOS** — en `ios/Runner/Info.plist`:
+
+```xml
+<key>LSApplicationQueriesSchemes</key>
+<array><string>https</string><string>tel</string><string>whatsapp</string></array>
+```
+
 ## 6. Builds
 
 - **Android (APK para instalar en los celulares del equipo):**

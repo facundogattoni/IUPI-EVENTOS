@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/messaging.dart';
 import '../../profiles/data/profile_repository.dart';
 import '../application/events_providers.dart';
 import '../data/event_repository.dart';
@@ -56,6 +57,11 @@ class EventDetailScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               _Header(event: event),
+              if (event.clientPhone != null &&
+                  event.clientPhone!.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _ContactActions(event: event),
+              ],
               const SizedBox(height: 16),
               _MoneyCard(event: event, isAdmin: isAdmin, ref: ref),
               const SizedBox(height: 12),
@@ -121,6 +127,42 @@ class EventDetailScreen extends ConsumerWidget {
       ref.invalidate(monthEventsProvider);
       if (context.mounted) context.pop();
     }
+  }
+}
+
+/// Botones rápidos para contactar al cliente por WhatsApp o teléfono.
+class _ContactActions extends StatelessWidget {
+  const _ContactActions({required this.event});
+  final Event event;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.tonalIcon(
+            onPressed: () => showWhatsAppMenu(context, event),
+            icon: const Icon(Icons.chat),
+            label: const Text('WhatsApp'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () async {
+              final ok = await Messaging.call(event.clientPhone);
+              if (!ok && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('No se pudo iniciar la llamada.')),
+                );
+              }
+            },
+            icon: const Icon(Icons.call),
+            label: const Text('Llamar'),
+          ),
+        ),
+      ],
+    );
   }
 }
 
