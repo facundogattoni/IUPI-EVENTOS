@@ -29,6 +29,18 @@ class ProfileRepository {
         .update(profile.toUpdateMap())
         .eq('id', profile.id);
   }
+
+  /// Ajusta rol y nombre de un perfil recién creado (lo usa el alta de usuarios).
+  Future<void> setRoleAndName({
+    required String id,
+    required UserRole role,
+    required String fullName,
+  }) async {
+    await _client
+        .from('profiles')
+        .update({'role': role.db, 'full_name': fullName})
+        .eq('id', id);
+  }
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
