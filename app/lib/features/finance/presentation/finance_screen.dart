@@ -14,18 +14,24 @@ class FinanceScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Finanzas'),
-          bottom: const TabBar(tabs: [
-            Tab(text: 'Movimientos'),
-            Tab(text: 'Proveedores'),
-          ]),
-        ),
-        body: const TabBarView(children: [
-          _TransactionsTab(),
-          _SuppliersTab(),
-        ]),
+      child: const Column(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: TabBar(
+              tabs: [
+                Tab(text: 'Movimientos'),
+                Tab(text: 'Proveedores'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(children: [
+              _TransactionsTab(),
+              _SuppliersTab(),
+            ]),
+          ),
+        ],
       ),
     );
   }

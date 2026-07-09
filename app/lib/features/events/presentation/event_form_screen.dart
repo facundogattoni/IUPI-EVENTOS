@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../profiles/data/profile_repository.dart';
 import '../../profiles/domain/profile.dart';
@@ -174,7 +175,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  _section('Festejado'),
+                  _section('Festejado', Icons.cake_rounded, AppColors.kids),
                   TextFormField(
                     controller: _childName,
                     textCapitalization: TextCapitalization.words,
@@ -209,7 +210,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                             (t) => setState(() => _end = t))),
                   ]),
 
-                  _section('Cantidades y contacto'),
+                  _section('Cantidades y contacto', Icons.groups_rounded, AppColors.info),
                   Row(children: [
                     Expanded(
                       child: TextFormField(
@@ -244,7 +245,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                         labelText: 'Teléfono', prefixIcon: Icon(Icons.phone)),
                   ),
 
-                  _section('Logística'),
+                  _section('Logística', Icons.local_shipping_rounded, AppColors.expense),
                   _timeField('Hora en que llevan las bebidas', _drinks,
                       (t) => setState(() => _drinks = t)),
                   const SizedBox(height: 12),
@@ -261,7 +262,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                         const InputDecoration(labelText: 'Observaciones'),
                   ),
 
-                  _section('Dinero'),
+                  _section('Dinero', Icons.attach_money_rounded, AppColors.income),
                   Row(children: [
                     Expanded(
                       child: TextFormField(
@@ -282,7 +283,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                     ),
                   ]),
 
-                  _section('Organización'),
+                  _section('Organización', Icons.groups_2_rounded, AppColors.brand),
                   DropdownButtonFormField<EventStatus>(
                     initialValue: _status,
                     decoration: const InputDecoration(labelText: 'Estado'),
@@ -390,16 +391,29 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
     );
   }
 
-  Widget _section(String title) => Padding(
-        padding: const EdgeInsets.only(top: 24, bottom: 8),
-        child: Text(
-          title,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0.6,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+  Widget _section(String title, IconData icon, Color color) => Padding(
+        padding: const EdgeInsets.only(top: 24, bottom: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Icon(icon, size: 17, color: color),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
         ),
       );
 }

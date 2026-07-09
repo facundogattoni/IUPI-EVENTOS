@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/events/presentation/event_detail_screen.dart';
 import '../../features/events/presentation/event_form_screen.dart';
-import '../../features/profiles/presentation/team_screen.dart';
 import '../../features/shell/home_shell.dart';
 import '../supabase/supabase_providers.dart';
 
@@ -45,7 +44,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/', builder: (_, __) => const HomeShell()),
-      GoRoute(path: '/team', builder: (_, __) => const TeamScreen()),
       // 'new' debe ir antes que ':id' para no ser capturado por el parámetro.
       GoRoute(
         path: '/events/new',

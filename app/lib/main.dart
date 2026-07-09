@@ -36,8 +36,9 @@ class IupiApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'IUPI',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
+      theme: AppTheme.dark(),
       darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.dark,
       routerConfig: router,
       locale: const Locale('es', 'AR'),
       supportedLocales: const [Locale('es', 'AR'), Locale('es'), Locale('en')],
@@ -58,7 +59,7 @@ class _MissingConfigApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
+      theme: AppTheme.dark(),
       home: const Scaffold(
         body: Center(
           child: Padding(

@@ -13,18 +13,24 @@ class MaintenanceScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Mantenimiento'),
-          bottom: const TabBar(tabs: [
-            Tab(text: 'Tareas'),
-            Tab(text: 'Inventario'),
-          ]),
-        ),
-        body: const TabBarView(children: [
-          _TasksTab(),
-          _InventoryTab(),
-        ]),
+      child: const Column(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: TabBar(
+              tabs: [
+                Tab(text: 'Tareas'),
+                Tab(text: 'Inventario'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(children: [
+              _TasksTab(),
+              _InventoryTab(),
+            ]),
+          ),
+        ],
       ),
     );
   }

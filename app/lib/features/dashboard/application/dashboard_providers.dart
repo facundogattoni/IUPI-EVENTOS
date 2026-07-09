@@ -86,3 +86,53 @@ final previousMonthSummaryProvider =
   final prev = DateTime(month.year, month.month - 1, 1);
   return _summaryFor(ref, prev);
 });
+
+/// Un punto de la serie mensual (para el gráfico de barras).
+class MonthPoint {
+  const MonthPoint(this.month, this.income, this.expense);
+  final DateTime month;
+  final double income;
+  final double expense;
+}
+
+/// Ingresos y gastos de los últimos 6 meses (terminando en el mes elegido).
+final sixMonthSeriesProvider = FutureProvider<List<MonthPoint>>((ref) async {
+  final anchor = ref.watch(dashboardMonthProvider);
+  final start = DateTime(anchor.year, anchor.month - 5, 1);
+  final end = DateTime(anchor.year, anchor.month + 1, 0);
+  final txs = await ref.read(financeRepositoryProvider).fetchInRange(start, end);
+
+  final buckets = <DateTime, List<double>>{};
+  for (var i = 0; i < 6; i++) {
+    final m = DateTime(anchor.year, anchor.month - 5 + i, 1);
+    buckets[m] = [0, 0];
+  }
+  for (final t in txs) {
+    final key = DateTime(t.occurredOn.year, t.occurredOn.month, 1);
+    final b = buckets[key];
+    if (b == null) continue;
+    if (t.type == TxType.ingreso) {
+      b[0] += t.amount;
+    } else {
+      b[1] += t.amount;
+    }
+  }
+  final entries = buckets.entries.toList()
+    ..sort((a, b) => a.key.compareTo(b.key));
+  return [for (final e in entries) MonthPoint(e.key, e.value[0], e.value[1])];
+});
+
+/// Total pendiente de cobro (saldos de eventos no cancelados en un rango amplio).
+final pendingBalanceProvider = FutureProvider<double>((ref) async {
+  ref.watch(dashboardMonthProvider);
+  final now = DateTime.now();
+  final from = DateTime(now.year, now.month - 3, 1);
+  final to = DateTime(now.year, now.month + 6, 0);
+  final events = await ref.read(eventRepositoryProvider).fetchInRange(from, to);
+  double total = 0;
+  for (final e in events) {
+    if (e.status == EventStatus.cancelado) continue;
+    total += e.balanceDue;
+  }
+  return total;
+});

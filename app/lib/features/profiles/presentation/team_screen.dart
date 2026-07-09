@@ -12,24 +12,22 @@ class TeamScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profilesAsync = ref.watch(allProfilesProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Equipo')),
-      body: profilesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (profiles) => ListView(
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Los usuarios se crean desde Supabase (Authentication). '
-                'Acá podés ajustar su nombre y rol.',
-                style: TextStyle(fontSize: 13),
-              ),
+    return profilesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+      data: (profiles) => ListView(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'Los usuarios se crean desde Supabase (Authentication). '
+              'Acá podés ajustar su nombre y rol.',
+              style: TextStyle(fontSize: 13),
             ),
-            for (final p in profiles) _ProfileTile(profile: p),
-          ],
-        ),
+          ),
+          for (final p in profiles) _ProfileTile(profile: p),
+        ],
       ),
     );
   }
