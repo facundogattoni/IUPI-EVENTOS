@@ -46,8 +46,12 @@ jobs:
       - name: Build web
         working-directory: app
         # base-href = nombre del repo (necesario para servir en un subpath de Pages).
+        # --pwa-strategy=none desactiva el service worker que cachea la app
+        # de forma agresiva; así cada actualización aparece al refrescar.
         run: |
-          flutter build web --release --base-href "/${GITHUB_REPOSITORY#*/}/"
+          flutter build web --release \
+            --pwa-strategy=none \
+            --base-href "/${GITHUB_REPOSITORY#*/}/"
           touch build/web/.nojekyll
 
       - name: Preparar artefacto de Pages

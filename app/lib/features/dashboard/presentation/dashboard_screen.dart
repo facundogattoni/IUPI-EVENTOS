@@ -245,8 +245,8 @@ class _StatCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(value,
-                style: const TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.w800)),
+                style: TextStyle(
+                    fontSize: 24, fontWeight: FontWeight.w900, color: color)),
           ),
           const SizedBox(height: 2),
           Text(
