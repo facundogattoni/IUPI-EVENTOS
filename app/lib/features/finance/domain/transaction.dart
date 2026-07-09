@@ -42,6 +42,7 @@ class Transaction {
     this.description,
     this.eventId,
     this.supplierId,
+    this.usdRate,
   });
 
   final String id;
@@ -53,8 +54,15 @@ class Transaction {
   final String? eventId;
   final String? supplierId;
 
+  /// Dólar al momento del movimiento (congela el valor en USD).
+  final double? usdRate;
+
   /// Con signo: negativo para gastos. Útil para sumar el neto.
   double get signed => type.isIncome ? amount : -amount;
+
+  /// Valor en dólares congelado al momento del movimiento.
+  double? get usdAmount =>
+      (usdRate != null && usdRate! > 0) ? amount / usdRate! : null;
 
   factory Transaction.fromMap(Map<String, dynamic> map) => Transaction(
         id: map['id'] as String,
@@ -65,6 +73,7 @@ class Transaction {
         description: map['description'] as String?,
         eventId: map['event_id'] as String?,
         supplierId: map['supplier_id'] as String?,
+        usdRate: (map['usd_rate'] as num?)?.toDouble(),
       );
 
   Map<String, dynamic> toWriteMap() => {
@@ -76,5 +85,6 @@ class Transaction {
         'description': description,
         'event_id': eventId,
         'supplier_id': supplierId,
+        'usd_rate': usdRate,
       };
 }

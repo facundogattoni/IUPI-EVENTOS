@@ -15,8 +15,17 @@ class Fmt {
   static final DateFormat _dayMonth = DateFormat('EEE d MMM', 'es_AR');
   static final DateFormat _monthYear = DateFormat('MMMM yyyy', 'es_AR');
 
+  static final NumberFormat _usd = NumberFormat.currency(
+    locale: 'es_AR',
+    symbol: 'USD ',
+    decimalDigits: 0,
+  );
+
   /// $12.345 — pensado para pesos, sin decimales.
   static String money(num value) => _money.format(value);
+
+  /// USD 1.000 — valor en dólares, sin decimales.
+  static String usd(num value) => _usd.format(value);
 
   static String date(DateTime d) => _date.format(d);
   static String dayMonth(DateTime d) => _dayMonth.format(d);

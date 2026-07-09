@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../accounting/presentation/investments_screen.dart';
 import '../auth/data/auth_repository.dart';
 import '../dashboard/presentation/dashboard_screen.dart';
 import '../events/presentation/calendar_screen.dart';
@@ -45,6 +46,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
       if (role.isAdmin)
         const _NavPage('Finanzas', Icons.account_balance_wallet_rounded,
             'GESTIÓN', FinanceScreen()),
+      if (role.isAdmin)
+        const _NavPage('Inversiones', Icons.savings_rounded, 'GESTIÓN',
+            InvestmentsScreen()),
       const _NavPage(
           'Mantenimiento', Icons.build_rounded, 'GESTIÓN', MaintenanceScreen()),
       if (role.isAdmin)

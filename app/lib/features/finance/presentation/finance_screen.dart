@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../accounting/data/accounting_repository.dart';
 import '../application/finance_providers.dart';
 import '../data/finance_repository.dart';
 import '../domain/supplier.dart';
@@ -13,15 +15,18 @@ class FinanceScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: const Column(
         children: [
           Material(
             color: Colors.transparent,
             child: TabBar(
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
               tabs: [
                 Tab(text: 'Movimientos'),
                 Tab(text: 'Proveedores'),
+                Tab(text: 'Dólar'),
               ],
             ),
           ),
@@ -29,6 +34,7 @@ class FinanceScreen extends ConsumerWidget {
             child: TabBarView(children: [
               _TransactionsTab(),
               _SuppliersTab(),
+              _RatesTab(),
             ]),
           ),
         ],
@@ -204,9 +210,19 @@ class _TxTile extends StatelessWidget {
         title: Text(tx.category),
         subtitle: Text(
             '${Fmt.date(tx.occurredOn)}${tx.description != null ? ' · ${tx.description}' : ''}'),
-        trailing: Text(
-          '${income ? '+' : '-'}${Fmt.money(tx.amount)}',
-          style: TextStyle(fontWeight: FontWeight.w700, color: color),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${income ? '+' : '-'}${Fmt.money(tx.amount)}',
+              style: TextStyle(fontWeight: FontWeight.w700, color: color),
+            ),
+            if (tx.usdAmount != null)
+              Text(Fmt.usd(tx.usdAmount!),
+                  style: const TextStyle(
+                      fontSize: 11, color: AppColors.textMuted)),
+          ],
         ),
       ),
     );
@@ -243,6 +259,8 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
     final amount = double.tryParse(_amount.text.replaceAll(',', '.'));
     if (amount == null || amount <= 0) return;
     setState(() => _saving = true);
+    // Congelar el valor en USD con la última cotización cargada.
+    final usdRate = ref.read(latestRateProvider).valueOrNull?.usdArs;
     try {
       await ref.read(financeRepositoryProvider).addTransaction(Transaction(
             id: '',
@@ -251,6 +269,7 @@ class _AddTransactionSheetState extends ConsumerState<_AddTransactionSheet> {
             amount: amount,
             occurredOn: _date,
             description: _desc.text.trim().isEmpty ? null : _desc.text.trim(),
+            usdRate: usdRate,
           ));
       ref.invalidate(transactionsProvider);
       if (mounted) Navigator.pop(context);
@@ -450,6 +469,164 @@ class _SuppliersTab extends ConsumerWidget {
               child: const Text('Guardar'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// Dólar (cotización)
+// =====================================================================
+class _RatesTab extends ConsumerWidget {
+  const _RatesTab();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ratesAsync = ref.watch(ratesProvider);
+    final latest = ref.watch(latestRateProvider).valueOrNull;
+
+    return Scaffold(
+      body: ratesAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => _LockedNotice(error: e),
+        data: (rates) => RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(ratesProvider);
+            ref.invalidate(latestRateProvider);
+          },
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.attach_money_rounded,
+                            color: AppColors.income),
+                        const SizedBox(width: 8),
+                        const Text('Dólar de hoy',
+                            style: TextStyle(color: AppColors.textMuted)),
+                        const Spacer(),
+                        if (latest != null)
+                          Text(Fmt.date(latest.rateDate),
+                              style: const TextStyle(
+                                  fontSize: 12, color: AppColors.textMuted)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      latest == null ? 'Sin cargar' : Fmt.money(latest.usdArs),
+                      style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.income),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      onPressed: () => _showAddRate(context, ref),
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('Actualizar cotización'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text('Historial',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              if (rates.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Text('Todavía no cargaste ninguna cotización.',
+                      style: TextStyle(color: AppColors.textMuted)),
+                )
+              else
+                for (final r in rates)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.calendar_today_rounded, size: 18),
+                    title: Text(Fmt.money(r.usdArs)),
+                    subtitle: Text(Fmt.date(r.rateDate)),
+                  ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showAddRate(BuildContext context, WidgetRef ref) async {
+    final ctrl = TextEditingController();
+    DateTime date = DateTime.now();
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) => Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 8,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('Cotización del dólar',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: ctrl,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                decoration: const InputDecoration(
+                    labelText: 'Cuántos pesos vale 1 dólar',
+                    prefixText: r'$ '),
+              ),
+              const SizedBox(height: 12),
+              InkWell(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: date,
+                    firstDate: DateTime(2010),
+                    lastDate: DateTime(2035),
+                    locale: const Locale('es', 'AR'),
+                  );
+                  if (picked != null) setModal(() => date = picked);
+                },
+                child: InputDecorator(
+                  decoration: const InputDecoration(labelText: 'Fecha'),
+                  child: Text(Fmt.date(date)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: () async {
+                  final v = double.tryParse(ctrl.text.replaceAll(',', '.'));
+                  if (v == null || v <= 0) return;
+                  await ref
+                      .read(accountingRepositoryProvider)
+                      .upsertRate(date, v);
+                  ref.invalidate(ratesProvider);
+                  ref.invalidate(latestRateProvider);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                },
+                child: const Text('Guardar'),
+              ),
+            ],
+          ),
         ),
       ),
     );
