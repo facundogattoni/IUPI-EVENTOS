@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/utils/username.dart';
 import '../data/auth_repository.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -34,7 +35,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
     try {
       await ref.read(authRepositoryProvider).signInWithPassword(
-            email: _emailCtrl.text,
+            email: emailFromLogin(_emailCtrl.text),
             password: _passwordCtrl.text,
           );
       // El redireccionamiento lo maneja el router al detectar la sesión.
@@ -102,14 +103,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 32),
                     TextFormField(
                       controller: _emailCtrl,
-                      keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.email],
+                      keyboardType: TextInputType.text,
+                      autofillHints: const [AutofillHints.username],
                       decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.alternate_email),
+                        labelText: 'Usuario o email',
+                        prefixIcon: Icon(Icons.person_outline),
                       ),
-                      validator: (v) => (v == null || !v.contains('@'))
-                          ? 'Ingresá un email válido'
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Ingresá tu usuario'
                           : null,
                     ),
                     const SizedBox(height: 12),

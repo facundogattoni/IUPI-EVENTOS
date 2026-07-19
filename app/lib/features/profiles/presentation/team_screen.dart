@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/username.dart';
 import '../../auth/data/auth_repository.dart';
 import '../data/profile_repository.dart';
 import '../domain/profile.dart';
@@ -76,11 +77,12 @@ class _CreateUserSheetState extends ConsumerState<_CreateUserSheet> {
 
   Future<void> _create() async {
     final name = _name.text.trim();
-    final email = _email.text.trim();
+    final username = _email.text.trim();
     final pass = _password.text;
-    if (name.isEmpty || !email.contains('@') || pass.length < 6) {
+    if (name.isEmpty || username.isEmpty || username.contains(' ') ||
+        pass.length < 6) {
       setState(() => _error =
-          'Completá nombre, un email válido y una contraseña de 6+ caracteres.');
+          'Completá nombre, usuario (sin espacios) y una contraseña de 6+ caracteres.');
       return;
     }
     setState(() {
@@ -90,7 +92,7 @@ class _CreateUserSheetState extends ConsumerState<_CreateUserSheet> {
     try {
       final id = await ref
           .read(authRepositoryProvider)
-          .createAccount(email: email, password: pass);
+          .createAccount(email: emailFromLogin(username), password: pass);
       await ref
           .read(profileRepositoryProvider)
           .setRoleAndName(id: id, role: _role, fullName: name);
@@ -145,9 +147,10 @@ class _CreateUserSheetState extends ConsumerState<_CreateUserSheet> {
           const SizedBox(height: 12),
           TextField(
             controller: _email,
-            keyboardType: TextInputType.emailAddress,
+            keyboardType: TextInputType.text,
             decoration: const InputDecoration(
-                labelText: 'Email', prefixIcon: Icon(Icons.alternate_email)),
+                labelText: 'Usuario (ej: juan, sin espacios)',
+                prefixIcon: Icon(Icons.person_outline)),
           ),
           const SizedBox(height: 12),
           TextField(
