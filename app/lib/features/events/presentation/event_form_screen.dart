@@ -45,6 +45,10 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
   String? _coordinatorId;
   final Set<String> _staffIds = {};
 
+  // Pago a registrar junto con el evento (opcional).
+  final _payAmount = TextEditingController();
+  String _payKind = 'Seña'; // 'Seña' | 'Total'
+
   bool _loading = false;
 
   @override
@@ -85,7 +89,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
   void dispose() {
     for (final c in [
       _childName, _childAge, _kids, _adults, _clientName,
-      _clientPhone, _food, _notes, _price, _deposit,
+      _clientPhone, _food, _notes, _price, _deposit, _payAmount,
     ]) {
       c.dispose();
     }
@@ -140,15 +144,24 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
 
     try {
       final repo = ref.read(eventRepositoryProvider);
+      final String savedId;
       if (widget.isEditing) {
         await repo.update(event);
+        savedId = widget.eventId!;
       } else {
-        await repo.create(event);
+        savedId = await repo.create(event);
+      }
+      // Registrar el pago cargado en el formulario (si hay).
+      final payAmount = _toDouble(_payAmount.text);
+      if (payAmount > 0) {
+        await repo.addPayment(
+          eventId: savedId,
+          amount: payAmount,
+          note: _payKind == 'Total' ? 'Pago total' : 'Seña',
+        );
       }
       ref.invalidate(monthEventsProvider);
-      if (widget.eventId != null) {
-        ref.invalidate(eventDetailProvider(widget.eventId!));
-      }
+      ref.invalidate(eventDetailProvider(savedId));
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
@@ -288,12 +301,13 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                     initialValue: _status,
                     decoration: const InputDecoration(labelText: 'Estado'),
                     items: [
-                      for (final s in EventStatus.values)
+                      for (final s in _statusOptions)
                         DropdownMenuItem(value: s, child: Text(s.label)),
                     ],
-                    onChanged: (v) =>
-                        setState(() => _status = v ?? _status),
+                    onChanged: (v) => setState(() => _status = v ?? _status),
                   ),
+                  const SizedBox(height: 12),
+                  _paymentSection(),
                   const SizedBox(height: 12),
                   profilesAsync.when(
                     loading: () => const LinearProgressIndicator(),
@@ -387,6 +401,68 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                 ),
         ),
         child: Text(value == null ? '—' : Fmt.time(value)),
+      ),
+    );
+  }
+
+  /// Solo Presupuestado y Confirmado (más el estado actual si el evento ya
+  /// tiene otro, para no romper la edición de eventos viejos).
+  List<EventStatus> get _statusOptions {
+    final opts = <EventStatus>{
+      EventStatus.presupuestado,
+      EventStatus.confirmado,
+      _status,
+    };
+    return opts.toList();
+  }
+
+  Widget _paymentSection() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.income.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.payments_rounded, size: 18, color: AppColors.income),
+              SizedBox(width: 8),
+              Text('Agregar pago',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'Seña', label: Text('Seña')),
+              ButtonSegment(value: 'Total', label: Text('Total')),
+            ],
+            selected: {_payKind},
+            onSelectionChanged: (s) => setState(() {
+              _payKind = s.first;
+              if (_payKind == 'Total') {
+                final price = _toDouble(_price.text);
+                if (price > 0) _payAmount.text = price.toStringAsFixed(0);
+              }
+            }),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: _payAmount,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+                labelText: 'Monto del pago (opcional)', prefixText: r'$ '),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Se registra al guardar y suma a lo cobrado del evento.',
+            style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+          ),
+        ],
       ),
     );
   }

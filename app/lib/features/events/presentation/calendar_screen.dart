@@ -7,7 +7,44 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../profiles/data/profile_repository.dart';
 import '../application/events_providers.dart';
+import '../domain/event.dart';
 import 'widgets/event_tile.dart';
+
+/// Referencia de colores de los puntitos del calendario.
+class _DotLegend extends StatelessWidget {
+  const _DotLegend({required this.color, required this.label});
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 9,
+          height: 9,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.black26, width: 0.5),
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(label,
+            style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+      ],
+    );
+  }
+}
+
+/// Color del puntito según el estado de pago:
+/// blanco = sin pagos, amarillo = seña/parcial, verde = pagado total.
+Color paymentDotColor(Event e) {
+  if (e.price > 0 && e.totalPaid >= e.price) return AppColors.income; // verde
+  if (e.totalPaid > 0) return const Color(0xFFFFC107); // amarillo
+  return Colors.white; // blanco (presupuestado sin pagos)
+}
 
 /// Calendario con vistas mes / quincena / semana y la agenda del día debajo.
 class CalendarScreen extends ConsumerWidget {
@@ -78,6 +115,16 @@ class CalendarScreen extends ConsumerWidget {
                 ref.read(calendarFormatProvider.notifier).state = f,
             onPageChanged: (focusedDay) =>
                 ref.read(focusedDayProvider.notifier).state = focusedDay,
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 14,
+            runSpacing: 4,
+            children: const [
+              _DotLegend(color: Colors.white, label: 'Sin pagar'),
+              _DotLegend(color: Color(0xFFFFC107), label: 'Señado'),
+              _DotLegend(color: AppColors.income, label: 'Pagado'),
+            ],
           ),
           const SizedBox(height: 16),
           Row(
@@ -178,6 +225,31 @@ class _CalendarCard extends StatelessWidget {
               ),
               selectedDecoration: const BoxDecoration(
                   color: AppColors.brand, shape: BoxShape.circle),
+            ),
+            calendarBuilders: CalendarBuilders<Object?>(
+              markerBuilder: (context, day, dayEvents) {
+                if (dayEvents.isEmpty) return const SizedBox.shrink();
+                return Positioned(
+                  bottom: 1,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final e in dayEvents.take(4))
+                        Container(
+                          width: 7,
+                          height: 7,
+                          margin: const EdgeInsets.symmetric(horizontal: 0.5),
+                          decoration: BoxDecoration(
+                            color: paymentDotColor(e as Event),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: Colors.black26, width: 0.5),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
             ),
             headerStyle: HeaderStyle(
               formatButtonShowsNext: false,
