@@ -93,6 +93,8 @@ class RentabilidadScreen extends ConsumerWidget {
         text: s.variableCostPerEvent == 0 ? '' : s.variableCostPerEvent.toStringAsFixed(0));
     final goal = TextEditingController(
         text: s.profitGoalMonthly == 0 ? '' : s.profitGoalMonthly.toStringAsFixed(0));
+    final recovered = TextEditingController(
+        text: s.alreadyRecoveredArs == 0 ? '' : s.alreadyRecoveredArs.toStringAsFixed(0));
 
     double d(TextEditingController c) =>
         double.tryParse(c.text.replaceAll('.', '').replaceAll(',', '.')) ?? 0;
@@ -154,6 +156,16 @@ class RentabilidadScreen extends ConsumerWidget {
                   prefixText: r'$ ',
                 ),
               ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: recovered,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Ya recuperado de la inversión (estimado, \$)',
+                  helperText: 'Aprox. de lo que ya te dejó la actividad anterior',
+                  prefixText: r'$ ',
+                ),
+              ),
               const SizedBox(height: 20),
               FilledButton(
                 onPressed: () async {
@@ -163,6 +175,7 @@ class RentabilidadScreen extends ConsumerWidget {
                           fixedCostsMonthly: d(fixed),
                           variableCostPerEvent: d(variable),
                           profitGoalMonthly: d(goal),
+                          alreadyRecoveredArs: d(recovered),
                         ),
                       );
                   ref.invalidate(businessSettingsProvider);
@@ -391,11 +404,26 @@ class _RoiCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
+                child: _mini('Ya recuperado (est.)',
+                    Fmt.money(p.settings.alreadyRecoveredArs), null),
+              ),
+              Expanded(
+                child: _mini(
+                    'Falta recuperar', Fmt.money(p.pendingToRecover), null),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
                 child: _mini(
                     'Se recupera en',
-                    p.paybackMonths == null
-                        ? '—'
-                        : '${p.paybackMonths} meses',
+                    p.pendingToRecover <= 0
+                        ? '¡Listo!'
+                        : (p.paybackMonths == null
+                            ? '—'
+                            : '${p.paybackMonths} meses'),
                     null),
               ),
               Expanded(

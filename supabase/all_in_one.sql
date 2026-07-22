@@ -1,7 +1,4 @@
--- =====================================================================
--- IUPI Event Manager — esquema COMPLETO en un solo archivo.
--- Generado a partir de migrations/0001..0006 + seed.sql. Idempotente.
--- =====================================================================
+-- IUPI — esquema COMPLETO (migraciones 0001..0007 + seed). Idempotente.
 
 -- ## 0001_init.sql
 
@@ -690,6 +687,20 @@ alter table public.business_settings enable row level security;
 drop policy if exists business_settings_admin on public.business_settings;
 create policy business_settings_admin on public.business_settings
   for all using (public.is_admin()) with check (public.is_admin());
+
+-- ## 0007_recovered.sql
+
+-- =====================================================================
+-- IUPI Event Manager — 0007 "ya recuperado (estimado)"
+-- Monto que ya se recuperó de la inversión (ej: por la actividad del año
+-- pasado sin registrar). Se usa en el ROI / payback.
+-- =====================================================================
+
+alter table public.business_settings
+  add column if not exists already_recovered_ars numeric(14,2) not null default 0;
+
+-- El "dólar de la compra" ya existe: capital_assets.usd_rate (migración 0006).
+-- Solo se expone como campo editable en la app, sin cambios de base.
 
 -- ## seed.sql
 

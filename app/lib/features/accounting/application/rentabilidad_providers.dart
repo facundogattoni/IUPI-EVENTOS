@@ -80,10 +80,13 @@ class Profitability {
         settings.variableCostPerEvent;
   }
 
-  int? get paybackMonths =>
-      (realProfit > 0 && totalInvestedArs > 0)
-          ? (totalInvestedArs / realProfit).ceil()
-          : null;
+  /// Cuánto falta recuperar (total invertido menos lo ya recuperado estimado).
+  double get pendingToRecover =>
+      (totalInvestedArs - settings.alreadyRecoveredArs).clamp(0, totalInvestedArs);
+
+  int? get paybackMonths => (realProfit > 0 && pendingToRecover > 0)
+      ? (pendingToRecover / realProfit).ceil()
+      : null;
 
   /// ROI anual estimado sobre la inversión (ganancia real x12 / invertido).
   double? get annualRoiPct => totalInvestedArs > 0
@@ -127,9 +130,12 @@ class Profitability {
           'Cada hora de trabajo te deja ${Fmt.money(profitPerHour!)} (sobre ${totalLaborHours.toStringAsFixed(0)} hs este mes).'));
     }
 
-    if (paybackMonths != null) {
+    if (totalInvestedArs > 0 && pendingToRecover <= 0) {
+      out.add(const Insight(InsightTone.good,
+          'Ya recuperaste toda la inversión. De acá en más es ganancia neta. 🎉'));
+    } else if (paybackMonths != null) {
       out.add(Insight(InsightTone.info,
-          'Al ritmo de ganancia actual, recuperás toda la inversión (${Fmt.money(totalInvestedArs)}) en ~$paybackMonths meses.'));
+          'Te falta recuperar ${Fmt.money(pendingToRecover)} de la inversión; al ritmo actual lo recuperás en ~$paybackMonths meses.'));
     }
 
     // Categoría de gasto más pesada.

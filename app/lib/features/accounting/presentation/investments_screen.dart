@@ -222,6 +222,7 @@ class _AssetSheetState extends ConsumerState<_AssetSheet> {
   late final TextEditingController _name;
   late final TextEditingController _cost;
   late final TextEditingController _life;
+  late final TextEditingController _rate;
   String? _category;
   DateTime _date = DateTime.now();
   bool _saving = false;
@@ -234,6 +235,11 @@ class _AssetSheetState extends ConsumerState<_AssetSheet> {
     _cost = TextEditingController(
         text: e == null ? '' : e.costArs.toStringAsFixed(0));
     _life = TextEditingController(text: (e?.usefulLifeMonths ?? 60).toString());
+    // Dólar de la compra: el guardado (si edita) o la última cotización (si es nuevo).
+    final initialRate =
+        e?.usdRate ?? ref.read(latestRateProvider).valueOrNull?.usdArs;
+    _rate = TextEditingController(
+        text: initialRate == null ? '' : initialRate.toStringAsFixed(0));
     _category = e?.category;
     _date = e?.purchaseDate ?? DateTime.now();
   }
@@ -243,6 +249,7 @@ class _AssetSheetState extends ConsumerState<_AssetSheet> {
     _name.dispose();
     _cost.dispose();
     _life.dispose();
+    _rate.dispose();
     super.dispose();
   }
 
@@ -254,9 +261,9 @@ class _AssetSheetState extends ConsumerState<_AssetSheet> {
     if (_name.text.trim().isEmpty || cost <= 0) return;
     setState(() => _saving = true);
 
-    // Congelar el dólar de la compra: usar el guardado, o la última cotización.
-    double? usdRate = widget.existing?.usdRate;
-    usdRate ??= ref.read(latestRateProvider).valueOrNull?.usdArs;
+    // Dólar de la compra (lo que cargó el usuario, editable).
+    final rateVal = _toDouble(_rate.text);
+    final usdRate = rateVal > 0 ? rateVal : null;
 
     final asset = CapitalAsset(
       id: widget.existing?.id ?? '',
@@ -286,7 +293,7 @@ class _AssetSheetState extends ConsumerState<_AssetSheet> {
   Widget build(BuildContext context) {
     final rate = ref.watch(latestRateProvider).valueOrNull;
     final cost = _toDouble(_cost.text);
-    final usdPreview = (widget.existing?.usdRate ?? rate?.usdArs);
+    final usdPreview = _toDouble(_rate.text) > 0 ? _toDouble(_rate.text) : null;
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -334,6 +341,17 @@ class _AssetSheetState extends ConsumerState<_AssetSheet> {
                     style: const TextStyle(
                         fontSize: 12, color: AppColors.income)),
               ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _rate,
+              keyboardType: TextInputType.number,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                labelText: 'Dólar de la compra (\$ por USD)',
+                helperText: 'Cuánto valía el dólar cuando lo compraste',
+                prefixText: r'$ ',
+              ),
+            ),
             const SizedBox(height: 12),
             Row(children: [
               Expanded(
