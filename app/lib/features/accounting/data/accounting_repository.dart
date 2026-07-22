@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/supabase/supabase_providers.dart';
+import '../domain/business_settings.dart';
 import '../domain/capital_asset.dart';
 import '../domain/exchange_rate.dart';
 
@@ -68,6 +69,20 @@ class AccountingRepository {
   Future<void> deleteAsset(String id) async {
     await _client.from('capital_assets').delete().eq('id', id);
   }
+
+  // -------- Configuración de rentabilidad --------
+
+  Future<BusinessSettings> fetchSettings() async {
+    final data =
+        await _client.from('business_settings').select().limit(1).maybeSingle();
+    return data == null
+        ? const BusinessSettings()
+        : BusinessSettings.fromMap(data);
+  }
+
+  Future<void> updateSettings(BusinessSettings s) async {
+    await _client.from('business_settings').update(s.toWriteMap()).eq('id', true);
+  }
 }
 
 final accountingRepositoryProvider = Provider<AccountingRepository>((ref) {
@@ -86,4 +101,9 @@ final ratesProvider = FutureProvider<List<ExchangeRate>>((ref) async {
 
 final assetsProvider = FutureProvider<List<CapitalAsset>>((ref) async {
   return ref.watch(accountingRepositoryProvider).fetchAssets();
+});
+
+final businessSettingsProvider = FutureProvider<BusinessSettings>((ref) async {
+  ref.watch(sessionProvider);
+  return ref.watch(accountingRepositoryProvider).fetchSettings();
 });

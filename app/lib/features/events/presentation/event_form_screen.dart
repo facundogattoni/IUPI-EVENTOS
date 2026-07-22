@@ -36,6 +36,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
   final _notes = TextEditingController();
   final _price = TextEditingController();
   final _deposit = TextEditingController();
+  final _hours = TextEditingController();
 
   DateTime _date = DateTime.now();
   TimeOfDay? _start;
@@ -72,6 +73,11 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
       _notes.text = e.notes ?? '';
       _price.text = e.price == 0 ? '' : e.price.toStringAsFixed(0);
       _deposit.text = e.deposit == 0 ? '' : e.deposit.toStringAsFixed(0);
+      _hours.text = e.laborHours == null
+          ? ''
+          : (e.laborHours! % 1 == 0
+              ? e.laborHours!.toStringAsFixed(0)
+              : e.laborHours!.toString());
       _date = e.eventDate;
       _start = e.startTime;
       _end = e.endTime;
@@ -89,7 +95,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
   void dispose() {
     for (final c in [
       _childName, _childAge, _kids, _adults, _clientName,
-      _clientPhone, _food, _notes, _price, _deposit, _payAmount,
+      _clientPhone, _food, _notes, _price, _deposit, _payAmount, _hours,
     ]) {
       c.dispose();
     }
@@ -139,6 +145,7 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
       deposit: _toDouble(_deposit.text),
       status: _status,
       coordinatorId: _coordinatorId,
+      laborHours: _toDouble(_hours.text) == 0 ? null : _toDouble(_hours.text),
       staffIds: _staffIds.toList(),
     );
 
@@ -308,6 +315,16 @@ class _EventFormScreenState extends ConsumerState<EventFormScreen> {
                   ),
                   const SizedBox(height: 12),
                   _paymentSection(),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _hours,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Horas de trabajo (opcional)',
+                      helperText: 'Cuántas horas les demandó, para el \$/hora',
+                      prefixIcon: Icon(Icons.timer_outlined),
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   profilesAsync.when(
                     loading: () => const LinearProgressIndicator(),

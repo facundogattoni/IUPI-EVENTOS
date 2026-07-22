@@ -24,6 +24,7 @@ class Event {
     this.deposit = 0,
     this.status = EventStatus.presupuestado,
     this.coordinatorId,
+    this.laborHours,
     this.totalPaid = 0,
     this.staffIds = const [],
   });
@@ -45,6 +46,9 @@ class Event {
   final double deposit;
   final EventStatus status;
   final String? coordinatorId;
+
+  /// Horas de trabajo que demandó el cumpleaños (para calcular $/hora).
+  final double? laborHours;
 
   /// Total ya cobrado (viene de la vista events_with_balance).
   final double totalPaid;
@@ -82,6 +86,7 @@ class Event {
       deposit: num2(map['deposit']),
       status: EventStatus.fromDb(map['status'] as String?),
       coordinatorId: map['coordinator_id'] as String?,
+      laborHours: (map['labor_hours'] as num?)?.toDouble(),
       totalPaid: num2(map['total_paid']),
     );
   }
@@ -105,6 +110,7 @@ class Event {
         'deposit': deposit,
         'status': status.db,
         'coordinator_id': coordinatorId,
+        'labor_hours': laborHours,
       };
 
   Event copyWith({
@@ -124,6 +130,7 @@ class Event {
     double? deposit,
     EventStatus? status,
     String? coordinatorId,
+    double? laborHours,
     double? totalPaid,
     List<String>? staffIds,
   }) {
@@ -145,6 +152,7 @@ class Event {
       deposit: deposit ?? this.deposit,
       status: status ?? this.status,
       coordinatorId: coordinatorId ?? this.coordinatorId,
+      laborHours: laborHours ?? this.laborHours,
       totalPaid: totalPaid ?? this.totalPaid,
       staffIds: staffIds ?? this.staffIds,
     );
