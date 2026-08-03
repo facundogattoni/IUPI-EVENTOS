@@ -1,0 +1,39 @@
+name: Diagnóstico conexión
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probar Supabase auth desde internet
+        env:
+          SUPA: https://tvvyyhtujpklovajgodq.supabase.co
+          ANON: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2dnl5aHR1anBrbG92YWpnb2RxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NjI0ODksImV4cCI6MjA5ODMzODQ4OX0.2b7Vlc9GDTDP6QBUz-QFj503rYJwOl65jaJAnvpPVlQ
+        run: |
+          echo "== Reachability (health) =="
+          curl -sS -m 20 -o /dev/null -w "health HTTP: %{http_code}\n" \
+            "$SUPA/auth/v1/health" -H "apikey: $ANON" || echo "health FAILED"
+
+          echo "== CORS preflight (origen github.io) =="
+          curl -sS -m 20 -i -X OPTIONS \
+            "$SUPA/auth/v1/token?grant_type=password" \
+            -H "Origin: https://facundogattoni.github.io" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: apikey,content-type" \
+            2>/dev/null | grep -i "access-control-allow-origin\|HTTP/" || echo "sin headers CORS"
+
+          echo "== Login real facundo/admin (solo status) =="
+          code=$(curl -sS -m 20 -o /tmp/r.json -w "%{http_code}" -X POST \
+            "$SUPA/auth/v1/token?grant_type=password" \
+            -H "apikey: $ANON" -H "Content-Type: application/json" \
+            -H "Origin: https://facundogattoni.github.io" \
+            -d '{"email":"facundo@iupi.app","password":"admin"}')
+          echo "token HTTP: $code"
+          if grep -q access_token /tmp/r.json; then
+            echo "RESULTADO: login OK a nivel servidor (hay token). El problema es la RED del usuario."
+          else
+            echo "RESULTADO: el servidor respondió pero sin token. Detalle:"
+            cat /tmp/r.json | head -c 300; echo
+          fi
